@@ -1,0 +1,29 @@
+package com.dmv.rules
+
+import com.dmv.model.LicenseRenewalRequest
+import com.dmv.model.RenewalDecision
+import com.dmv.model.DecisionType
+import com.dmv.model.Violation
+import com.dmv.model.ViolationStatus
+
+rule "Outstanding Violations - Requires Resolution"
+    salience 95
+    when
+        $request : LicenseRenewalRequest( hasOutstandingViolations() == true )
+        $decision : RenewalDecision( decision == DecisionType.APPROVED )
+    then
+        $decision.setDecision(DecisionType.REQUIRES_ACTION);
+        $decision.addRequirement("Resolve " + $request.getOutstandingViolationCount() + " outstanding violation(s) before renewal");
+        $decision.addReason("Outstanding violations must be resolved");
+        update($decision);
+end
+
+rule "No Outstanding Violations - Approved"
+    salience 85
+    when
+        $request : LicenseRenewalRequest( hasOutstandingViolations() == false )
+        $decision : RenewalDecision( decision == DecisionType.APPROVED )
+    then
+        $decision.addReason("No outstanding violations - renewal approved");
+        update($decision);
+end

@@ -1,0 +1,26 @@
+package com.dmv.rules
+
+import com.dmv.model.LicenseRenewalRequest
+import com.dmv.model.RenewalDecision
+import com.dmv.model.DecisionType
+
+rule "Age Verification - Minor Requires Parental Consent"
+    when
+        $request : LicenseRenewalRequest( personalInfo.age < 18 )
+        not RenewalDecision()
+    then
+        RenewalDecision decision = new RenewalDecision(DecisionType.REQUIRES_ACTION);
+        decision.addRequirement("Parental consent required for applicants under 18");
+        decision.addReason("Applicant is " + $request.getPersonalInfo().getAge() + " years old");
+        insert(decision);
+end
+
+rule "Age Verification - Adult Approved"
+    when
+        $request : LicenseRenewalRequest( personalInfo.age >= 18 )
+        not RenewalDecision()
+    then
+        RenewalDecision decision = new RenewalDecision(DecisionType.APPROVED);
+        decision.addReason("Age verification passed - applicant is " + $request.getPersonalInfo().getAge() + " years old");
+        insert(decision);
+end

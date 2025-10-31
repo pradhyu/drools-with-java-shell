@@ -1,0 +1,200 @@
+[
+  {
+    "name": "Valid Adult Renewal",
+    "description": "Standard renewal for an adult with clean record",
+    "request": {
+      "applicantId": "APP001",
+      "personalInfo": {
+        "firstName": "John",
+        "lastName": "Doe",
+        "dateOfBirth": "1985-05-15",
+        "address": {
+          "street": "123 Main St",
+          "city": "Anytown",
+          "state": "CA",
+          "zipCode": "12345"
+        },
+        "phoneNumber": "+1-555-123-4567"
+      },
+      "currentLicense": {
+        "licenseNumber": "D1234567",
+        "licenseClass": "CLASS_C",
+        "issueDate": "2020-01-01",
+        "expirationDate": "2025-01-01",
+        "status": "ACTIVE"
+      },
+      "violations": [],
+      "renewalType": "STANDARD"
+    },
+    "expectedDecision": "APPROVED"
+  },
+  {
+    "name": "Minor Renewal",
+    "description": "Renewal for a minor requiring parental consent",
+    "request": {
+      "applicantId": "APP002",
+      "personalInfo": {
+        "firstName": "Jane",
+        "lastName": "Smith",
+        "dateOfBirth": "2008-03-20",
+        "address": {
+          "street": "456 Oak Ave",
+          "city": "Somewhere",
+          "state": "CA",
+          "zipCode": "54321"
+        },
+        "phoneNumber": "+1-555-987-6543"
+      },
+      "currentLicense": {
+        "licenseNumber": "L9876543",
+        "licenseClass": "LEARNER_PERMIT",
+        "issueDate": "2023-06-01",
+        "expirationDate": "2024-06-01",
+        "status": "ACTIVE"
+      },
+      "violations": [],
+      "renewalType": "STANDARD"
+    },
+    "expectedDecision": "REQUIRES_ACTION"
+  },
+  {
+    "name": "Expired License Renewal",
+    "description": "Renewal for license expired more than 6 months",
+    "request": {
+      "applicantId": "APP003",
+      "personalInfo": {
+        "firstName": "Bob",
+        "lastName": "Johnson",
+        "dateOfBirth": "1975-08-10",
+        "address": {
+          "street": "789 Pine St",
+          "city": "Elsewhere",
+          "state": "CA",
+          "zipCode": "98765"
+        },
+        "phoneNumber": "+1-555-456-7890"
+      },
+      "currentLicense": {
+        "licenseNumber": "D5555555",
+        "licenseClass": "CLASS_C",
+        "issueDate": "2018-01-01",
+        "expirationDate": "2023-01-01",
+        "status": "EXPIRED"
+      },
+      "violations": [],
+      "renewalType": "STANDARD"
+    },
+    "expectedDecision": "REQUIRES_ACTION"
+  },
+  {
+    "name": "Renewal with Outstanding Violations",
+    "description": "Renewal blocked by outstanding violations",
+    "request": {
+      "applicantId": "APP004",
+      "personalInfo": {
+        "firstName": "Alice",
+        "lastName": "Brown",
+        "dateOfBirth": "1990-12-05",
+        "address": {
+          "street": "321 Elm St",
+          "city": "Nowhere",
+          "state": "CA",
+          "zipCode": "13579"
+        },
+        "phoneNumber": "+1-555-321-6547"
+      },
+      "currentLicense": {
+        "licenseNumber": "D7777777",
+        "licenseClass": "CLASS_C",
+        "issueDate": "2021-01-01",
+        "expirationDate": "2026-01-01",
+        "status": "ACTIVE"
+      },
+      "violations": [
+        {
+          "violationCode": "SP001",
+          "description": "Speeding",
+          "violationDate": "2023-06-15",
+          "fineAmount": 150.00,
+          "status": "OUTSTANDING"
+        },
+        {
+          "violationCode": "PK002",
+          "description": "Illegal Parking",
+          "violationDate": "2023-08-20",
+          "fineAmount": 75.00,
+          "status": "RESOLVED",
+          "resolvedDate": "2023-09-01"
+        }
+      ],
+      "renewalType": "STANDARD"
+    },
+    "expectedDecision": "REQUIRES_ACTION"
+  },
+  {
+    "name": "Suspended License",
+    "description": "Renewal attempt with suspended license",
+    "request": {
+      "applicantId": "APP005",
+      "personalInfo": {
+        "firstName": "Charlie",
+        "lastName": "Wilson",
+        "dateOfBirth": "1988-07-22",
+        "address": {
+          "street": "555 Maple Dr",
+          "city": "Testville",
+          "state": "CA",
+          "zipCode": "24680"
+        },
+        "phoneNumber": "+1-555-111-2222"
+      },
+      "currentLicense": {
+        "licenseNumber": "D8888888",
+        "licenseClass": "CLASS_C",
+        "issueDate": "2019-01-01",
+        "expirationDate": "2024-01-01",
+        "status": "SUSPENDED"
+      },
+      "violations": [
+        {
+          "violationCode": "DUI001",
+          "description": "Driving Under Influence",
+          "violationDate": "2023-05-10",
+          "fineAmount": 1500.00,
+          "status": "OUTSTANDING"
+        }
+      ],
+      "renewalType": "REINSTATEMENT"
+    },
+    "expectedDecision": "REJECTED"
+  },
+  {
+    "name": "Expedited Renewal",
+    "description": "Valid adult requesting expedited processing",
+    "request": {
+      "applicantId": "APP006",
+      "personalInfo": {
+        "firstName": "Diana",
+        "lastName": "Davis",
+        "dateOfBirth": "1982-11-30",
+        "address": {
+          "street": "777 Cedar Ln",
+          "city": "Quicktown",
+          "state": "CA",
+          "zipCode": "97531"
+        },
+        "phoneNumber": "+1-555-333-4444"
+      },
+      "currentLicense": {
+        "licenseNumber": "D9999999",
+        "licenseClass": "CLASS_C",
+        "issueDate": "2020-12-01",
+        "expirationDate": "2025-12-01",
+        "status": "ACTIVE"
+      },
+      "violations": [],
+      "renewalType": "EXPEDITED"
+    },
+    "expectedDecision": "APPROVED"
+  }
+]

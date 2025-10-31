@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${title}">DMV Rules Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.2em;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .feature p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .status {
+            margin-top: 30px;
+            padding: 15px;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            color: #155724;
+        }
+
+        .timestamp {
+            margin-top: 20px;
+            color: #999;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 th:text="${title}">DMV Rules Engine</h1>
+        <p class="subtitle">Interactive Business Rules Management System with JShell Integration</p>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>🔧 JShell REPL</h3>
+                <p>Interactive Java environment for dynamic rule development and testing</p>
+            </div>
+            <div class="feature">
+                <h3>📋 REST API</h3>
+                <p>Comprehensive API for rule management, testing, and evaluation</p>
+            </div>
+            <div class="feature">
+                <h3>🔍 LSP Support</h3>
+                <p>IDE integration with syntax highlighting and error detection</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Debug Tools</h3>
+                <p>Advanced debugging and profiling capabilities for rule optimization</p>
+            </div>
+            <div class="feature">
+                <h3>📈 Version Control</h3>
+                <p>Rule versioning with history tracking and rollback capabilities</p>
+            </div>
+            <div class="feature">
+                <h3>🧪 Testing Framework</h3>
+                <p>Comprehensive testing and simulation tools for rule validation</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="/jshell" class="btn btn-primary">Open JShell REPL</a>
+            <a href="/api/dmv/status" class="btn btn-secondary">API Status</a>
+            <a href="/api/rules" class="btn btn-secondary">View Rules</a>
+        </div>
+
+        <div class="status">
+            <strong>System Status:</strong> DMV Rules Engine is running and ready to process requests
+        </div>
+
+        <div class="timestamp">
+            <p>Server started at: <span th:text="${timestamp}"></span></p>
+        </div>
+    </div>
+</body>
+</html>

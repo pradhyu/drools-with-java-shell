@@ -1,0 +1,61 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: dmv-rules-engine
+  
+  datasource:
+    url: jdbc:h2:mem:dmvdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# DMV Rules Engine Configuration
+dmv:
+  rules:
+    path: classpath:rules/
+    reload-interval: 30000
+  
+  jshell:
+    session-timeout: 3600000  # 1 hour
+    max-sessions: 10
+  
+  lsp:
+    port: 8081
+    websocket-path: /lsp
+
+# Logging Configuration
+logging:
+  level:
+    com.dmv: DEBUG
+    org.drools: INFO
+    org.kie: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/dmv-rules-engine.log
+
+# Management and Monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
