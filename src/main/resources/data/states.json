@@ -1,0 +1,47 @@
+[
+  {
+    "code": "CA",
+    "name": "California",
+    "region": "West",
+    "requiresVisionTest": true,
+    "renewalFee": 35.00,
+    "maxRenewalYears": 5,
+    "specialRequirements": ["vision_test"]
+  },
+  {
+    "code": "NY",
+    "name": "New York", 
+    "region": "Northeast",
+    "requiresVisionTest": true,
+    "renewalFee": 64.50,
+    "maxRenewalYears": 8,
+    "specialRequirements": ["vision_test", "photo_update"]
+  },
+  {
+    "code": "TX",
+    "name": "Texas",
+    "region": "South",
+    "requiresVisionTest": false,
+    "renewalFee": 25.00,
+    "maxRenewalYears": 6,
+    "specialRequirements": []
+  },
+  {
+    "code": "FL",
+    "name": "Florida",
+    "region": "South", 
+    "requiresVisionTest": true,
+    "renewalFee": 48.00,
+    "maxRenewalYears": 8,
+    "specialRequirements": ["vision_test"]
+  },
+  {
+    "code": "WA",
+    "name": "Washington",
+    "region": "West",
+    "requiresVisionTest": false,
+    "renewalFee": 54.00,
+    "maxRenewalYears": 6,
+    "specialRequirements": ["enhanced_id_available"]
+  }
+]

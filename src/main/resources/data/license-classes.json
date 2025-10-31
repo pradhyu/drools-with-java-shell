@@ -1,0 +1,77 @@
+[
+  {
+    "class": "CLASS_C",
+    "name": "Class C - Regular Driver License",
+    "description": "Standard passenger vehicle license",
+    "minAge": 16,
+    "maxAge": null,
+    "renewalPeriod": 5,
+    "testRequired": false,
+    "restrictions": [],
+    "fee": {
+      "base": 35.00,
+      "senior": 25.00,
+      "veteran": 30.00
+    }
+  },
+  {
+    "class": "LEARNER_PERMIT",
+    "name": "Learner's Permit",
+    "description": "Provisional license for learning drivers",
+    "minAge": 15,
+    "maxAge": 18,
+    "renewalPeriod": 1,
+    "testRequired": true,
+    "restrictions": ["supervised_driving", "no_night_driving", "no_passengers"],
+    "fee": {
+      "base": 15.00,
+      "senior": 15.00,
+      "veteran": 15.00
+    }
+  },
+  {
+    "class": "MOTORCYCLE",
+    "name": "Motorcycle License",
+    "description": "License for motorcycle operation",
+    "minAge": 16,
+    "maxAge": null,
+    "renewalPeriod": 5,
+    "testRequired": true,
+    "restrictions": ["helmet_required"],
+    "fee": {
+      "base": 45.00,
+      "senior": 35.00,
+      "veteran": 40.00
+    }
+  },
+  {
+    "class": "CDL_A",
+    "name": "Commercial Driver License Class A",
+    "description": "Heavy truck and trailer combinations",
+    "minAge": 21,
+    "maxAge": 65,
+    "renewalPeriod": 4,
+    "testRequired": true,
+    "restrictions": ["medical_certificate", "drug_testing"],
+    "fee": {
+      "base": 89.00,
+      "senior": 89.00,
+      "veteran": 80.00
+    }
+  },
+  {
+    "class": "ENHANCED_ID",
+    "name": "Enhanced Driver License",
+    "description": "REAL ID compliant license for federal facilities",
+    "minAge": 16,
+    "maxAge": null,
+    "renewalPeriod": 8,
+    "testRequired": false,
+    "restrictions": ["enhanced_documentation"],
+    "fee": {
+      "base": 62.00,
+      "senior": 52.00,
+      "veteran": 57.00
+    }
+  }
+]

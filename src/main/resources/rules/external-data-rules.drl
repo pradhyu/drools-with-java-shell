@@ -1,0 +1,158 @@
+package com.dmv.rules
+
+import com.dmv.model.LicenseRenewalRequest
+import com.dmv.model.RenewalDecision
+import com.dmv.model.DecisionType
+import com.dmv.service.ExternalDataService
+import com.dmv.service.ExternalDataHelper
+import java.util.List
+import java.util.Map
+import java.util.Optional
+import java.math.BigDecimal
+
+global ExternalDataService externalDataService
+global ExternalDataHelper dataHelper
+
+rule "State-Specific Vision Test Requirement"
+    salience 85
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision( decision == DecisionType.APPROVED )
+    then
+        // Look up state requirements
+        List<Map<String, Object>> stateInfo = externalDataService.findByCollectionAndKey(
+            "states", "code", $request.getPersonalInfo().getAddress().getState()
+        );
+        
+        if (!stateInfo.isEmpty()) {
+            Map<String, Object> state = stateInfo.get(0);
+            Boolean requiresVisionTest = (Boolean) state.get("requiresVisionTest");
+            
+            if (requiresVisionTest != null && requiresVisionTest) {
+                $decision.addRequirement("Vision test required for " + state.get("name"));
+                $decision.addReason("State " + state.get("code") + " requires vision test for renewal");
+            }
+        }
+        
+        update($decision);
+end
+
+rule "Calculate Renewal Fee Based on License Class"
+    salience 80
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision( decision == DecisionType.APPROVED )
+    then
+        // Look up license class information
+        List<Map<String, Object>> licenseClassInfo = externalDataService.findByCollectionAndKey(
+            "license-classes", "class", $request.getCurrentLicense().getLicenseClass().toString()
+        );
+        
+        if (!licenseClassInfo.isEmpty()) {
+            Map<String, Object> licenseClass = licenseClassInfo.get(0);
+            Map<String, Object> feeInfo = (Map<String, Object>) licenseClass.get("fee");
+            
+            if (feeInfo != null) {
+                // Determine age group for fee calculation
+                int age = $request.getPersonalInfo().getAge();
+                String ageGroup = age >= 65 ? "senior" : "base";
+                
+                Double fee = (Double) feeInfo.get(ageGroup);
+                if (fee != null) {
+                    $decision.setFee(BigDecimal.valueOf(fee));
+                    $decision.addReason("Fee calculated: $" + fee + " (" + ageGroup + " rate for " + licenseClass.get("name") + ")");
+                }
+            }
+        }
+        
+        update($decision);
+end
+
+rule "Enhanced License Class Restrictions"
+    salience 75
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision( decision == DecisionType.APPROVED )
+    then
+        // Look up license class restrictions
+        List<Map<String, Object>> licenseClassInfo = externalDataService.findByCollectionAndKey(
+            "license-classes", "class", $request.getCurrentLicense().getLicenseClass().toString()
+        );
+        
+        if (!licenseClassInfo.isEmpty()) {
+            Map<String, Object> licenseClass = licenseClassInfo.get(0);
+            List<String> restrictions = (List<String>) licenseClass.get("restrictions");
+            
+            if (restrictions != null && !restrictions.isEmpty()) {
+                for (String restriction : restrictions) {
+                    if ("medical_certificate".equals(restriction)) {
+                        $decision.addRequirement("Valid medical certificate required");
+                    } else if ("enhanced_documentation".equals(restriction)) {
+                        $decision.addRequirement("Enhanced documentation required (birth certificate, passport, etc.)");
+                    } else if ("supervised_driving".equals(restriction)) {
+                        $decision.addRequirement("Supervised driving restrictions apply");
+                    }
+                }
+                $decision.addReason("License class " + licenseClass.get("name") + " has special restrictions");
+            }
+        }
+        
+        update($decision);
+end
+
+rule "Late Renewal Fee Penalty"
+    salience 70
+    when
+        $request : LicenseRenewalRequest( currentLicense.expired == true, currentLicense.monthsSinceExpiration > 0 )
+        $decision : RenewalDecision( decision == DecisionType.APPROVED )
+    then
+        // Look up late renewal fee schedule
+        List<Map<String, Object>> lateFees = externalDataService.findByCollectionAndKey(
+            "fee-schedules", "type", "late_renewal"
+        );
+        
+        if (!lateFees.isEmpty()) {
+            Map<String, Object> feeSchedule = lateFees.get(0);
+            Double lateFee = (Double) feeSchedule.get("lateFee");
+            Double totalFee = (Double) feeSchedule.get("totalFee");
+            
+            if (lateFee != null && totalFee != null) {
+                $decision.setFee(BigDecimal.valueOf(totalFee));
+                $decision.addReason("Late renewal penalty applied: $" + lateFee + " (total: $" + totalFee + ")");
+                $decision.addReason("License expired " + $request.getCurrentLicense().getMonthsSinceExpiration() + " months ago");
+            }
+        }
+        
+        update($decision);
+end
+
+rule "Test Required Fee Addition"
+    salience 65
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision( decision == DecisionType.REQUIRES_ACTION )
+        eval($decision.getRequirements().stream().anyMatch(req -> req.contains("test required") || req.contains("Test required")))
+    then
+        // Look up test fee schedule
+        List<Map<String, Object>> testFees = externalDataService.findByCollectionAndKey(
+            "fee-schedules", "type", "test_required"
+        );
+        
+        if (!testFees.isEmpty()) {
+            Map<String, Object> feeSchedule = testFees.get(0);
+            Double testFee = (Double) feeSchedule.get("testFee");
+            Double totalFee = (Double) feeSchedule.get("totalFee");
+            
+            if (testFee != null && totalFee != null) {
+                BigDecimal currentFee = $decision.getFee();
+                BigDecimal newFee = currentFee != null ? 
+                    currentFee.add(BigDecimal.valueOf(testFee)) : 
+                    BigDecimal.valueOf(totalFee);
+                
+                $decision.setFee(newFee);
+                $decision.addReason("Test fee added: $" + testFee + " (new total: $" + newFee + ")");
+            }
+        }
+        
+        update($decision);
+end

@@ -1,0 +1,189 @@
+package com.dmv.rules
+
+import com.dmv.model.LicenseRenewalRequest
+import com.dmv.model.RenewalDecision
+import com.dmv.model.DecisionType
+import com.dmv.model.PersonalInfo
+import com.dmv.model.LicenseInfo
+import com.dmv.service.ExternalDataService
+import com.dmv.service.ExternalDataHelper
+import java.util.List
+import java.util.Map
+import java.util.Optional
+import java.util.Arrays
+import java.math.BigDecimal
+
+global ExternalDataService externalDataService
+global ExternalDataHelper dataHelper
+
+rule "State-Specific Online Renewal Check"
+    salience 90
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision(decision == DecisionType.APPROVED)
+    then
+        String stateCode = $request.getPersonalInfo().getAddress().getState();
+        
+        if (dataHelper.isOnlineRenewalAvailable(stateCode)) {
+            $decision.addReason("Online renewal available for " + stateCode);
+            $decision.setProcessingMethod("ONLINE");
+        } else {
+            $decision.addReason("In-person renewal required for " + stateCode);
+            $decision.setProcessingMethod("IN_PERSON");
+        }
+        
+        update($decision);
+end
+
+rule "License Class Age Verification"
+    salience 85
+    when
+        $request : LicenseRenewalRequest()
+        $person : PersonalInfo()
+        $decision : RenewalDecision()
+    then
+        String licenseClass = $request.getCurrentLicense().getLicenseClass().toString();
+        int applicantAge = $person.getAge();
+        int minimumAge = dataHelper.getMinimumAge(licenseClass);
+        
+        if (applicantAge < minimumAge) {
+            $decision.setDecision(DecisionType.DENIED);
+            $decision.addReason("Applicant age (" + applicantAge + ") below minimum for " + licenseClass + " (" + minimumAge + ")");
+        } else {
+            $decision.addReason("Age requirement satisfied for " + licenseClass);
+        }
+        
+        update($decision);
+end
+
+rule "Driving Test Requirement Check"
+    salience 80
+    when
+        $request : LicenseRenewalRequest(currentLicense.monthsSinceExpiration > 6)
+        $decision : RenewalDecision(decision == DecisionType.APPROVED)
+    then
+        String licenseClass = $request.getCurrentLicense().getLicenseClass().toString();
+        
+        if (dataHelper.requiresDrivingTest(licenseClass)) {
+            $decision.setDecision(DecisionType.REQUIRES_ACTION);
+            $decision.addRequirement("Driving test required - license expired over 6 months");
+            $decision.addReason("License class " + licenseClass + " requires driving test after extended expiration");
+        }
+        
+        update($decision);
+end
+
+rule "Calculate Base Renewal Fee"
+    salience 75
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision(decision == DecisionType.APPROVED)
+    then
+        String licenseClass = $request.getCurrentLicense().getLicenseClass().toString();
+        double renewalFee = dataHelper.getRenewalFee(licenseClass);
+        
+        if (renewalFee > 0) {
+            $decision.setFee(BigDecimal.valueOf(renewalFee));
+            $decision.addReason("Base renewal fee for " + licenseClass + ": $" + renewalFee);
+        }
+        
+        update($decision);
+endrule "Ap
+ply Senior Discount"
+    salience 70
+    when
+        $request : LicenseRenewalRequest()
+        $person : PersonalInfo(age >= 65)
+        $decision : RenewalDecision(decision == DecisionType.APPROVED, fee != null)
+    then
+        Optional<Map<String, Object>> feeSchedule = dataHelper.getFeeSchedule("renewal", "standard");
+        
+        if (feeSchedule.isPresent()) {
+            Map<String, Object> modifiers = (Map<String, Object>) feeSchedule.get().get("modifiers");
+            double baseAmount = $decision.getFee().doubleValue();
+            
+            List<String> applicableModifiers = Arrays.asList("senior_discount");
+            double totalFee = dataHelper.calculateTotalFee(baseAmount, modifiers, applicableModifiers);
+            
+            $decision.setFee(BigDecimal.valueOf(totalFee));
+            $decision.addReason("Senior discount applied (age " + $person.getAge() + ")");
+        }
+        
+        update($decision);
+end
+
+rule "Apply Veteran Discount"
+    salience 69
+    when
+        $request : LicenseRenewalRequest()
+        $person : PersonalInfo(veteranStatus == true)
+        $decision : RenewalDecision(decision == DecisionType.APPROVED, fee != null)
+    then
+        Optional<Map<String, Object>> feeSchedule = dataHelper.getFeeSchedule("renewal", "standard");
+        
+        if (feeSchedule.isPresent()) {
+            Map<String, Object> modifiers = (Map<String, Object>) feeSchedule.get().get("modifiers");
+            double baseAmount = $decision.getFee().doubleValue();
+            
+            List<String> applicableModifiers = Arrays.asList("veteran_discount");
+            double totalFee = dataHelper.calculateTotalFee(baseAmount, modifiers, applicableModifiers);
+            
+            $decision.setFee(BigDecimal.valueOf(totalFee));
+            $decision.addReason("Veteran discount applied");
+        }
+        
+        update($decision);
+end
+
+rule "Apply Late Fee Penalty"
+    salience 65
+    when
+        $request : LicenseRenewalRequest(currentLicense.expired == true, currentLicense.monthsSinceExpiration > 0)
+        $decision : RenewalDecision(decision == DecisionType.APPROVED, fee != null)
+    then
+        String stateCode = $request.getPersonalInfo().getAddress().getState();
+        double lateFee = dataHelper.getLateFee(stateCode);
+        
+        if (lateFee > 0) {
+            BigDecimal currentFee = $decision.getFee();
+            BigDecimal newFee = currentFee.add(BigDecimal.valueOf(lateFee));
+            
+            $decision.setFee(newFee);
+            $decision.addReason("Late renewal penalty: $" + lateFee + " (expired " + 
+                              $request.getCurrentLicense().getMonthsSinceExpiration() + " months ago)");
+        }
+        
+        update($decision);
+end
+
+rule "Fee Schedule Validation"
+    salience 40
+    when
+        $request : LicenseRenewalRequest()
+        $decision : RenewalDecision(fee == null)
+    then
+        // Fallback fee calculation if no fee was set
+        String licenseClass = $request.getCurrentLicense().getLicenseClass().toString();
+        List<Map<String, Object>> feeSchedules = dataHelper.getFeeSchedulesByType("renewal");
+        
+        for (Map<String, Object> schedule : feeSchedules) {
+            List<String> applicableTo = (List<String>) schedule.get("applicableTo");
+            
+            if (applicableTo != null && applicableTo.contains(licenseClass)) {
+                Double baseAmount = (Double) schedule.get("baseAmount");
+                if (baseAmount != null) {
+                    $decision.setFee(BigDecimal.valueOf(baseAmount));
+                    $decision.addReason("Default fee applied: $" + baseAmount);
+                    break;
+                }
+            }
+        }
+        
+        // If still no fee, use minimum default
+        if ($decision.getFee() == null) {
+            $decision.setFee(BigDecimal.valueOf(25.00));
+            $decision.addReason("Minimum default fee applied: $25.00");
+        }
+        
+        update($decision);
+end

@@ -60,10 +60,21 @@ public class DroolsConfig {
     }
 
     @Bean
-    public KieSession kieSession(KieContainer kieContainer) {
-        logger.info("Creating default KieSession...");
+    public KieSession kieSession(KieContainer kieContainer, 
+                                com.dmv.service.ExternalDataService externalDataService,
+                                com.dmv.service.ExternalDataHelper externalDataHelper) {
+        logger.info("Creating default KieSession with global variables...");
         KieSession kieSession = kieContainer.newKieSession();
-        logger.info("Default KieSession created successfully");
+        
+        // Register global variables for use in rules
+        kieSession.setGlobal("externalDataService", externalDataService);
+        kieSession.setGlobal("dataHelper", externalDataHelper);
+        
+        logger.info("Registered global variables in KieSession:");
+        logger.info("  - externalDataService: {}", externalDataService.getClass().getSimpleName());
+        logger.info("  - dataHelper: {}", externalDataHelper.getClass().getSimpleName());
+        
+        logger.info("Default KieSession created successfully with global variables");
         return kieSession;
     }
 }

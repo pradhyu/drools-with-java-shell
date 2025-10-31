@@ -36,11 +36,14 @@ public class RulesManagementServiceImpl implements RulesManagementService {
 
     private final KieServices kieServices;
     private final AtomicReference<KieContainer> kieContainerRef;
+    private final com.dmv.service.ExternalDataService externalDataService;
 
     @Autowired
-    public RulesManagementServiceImpl(KieServices kieServices, KieContainer kieContainer) {
+    public RulesManagementServiceImpl(KieServices kieServices, KieContainer kieContainer,
+                                     com.dmv.service.ExternalDataService externalDataService) {
         this.kieServices = kieServices;
         this.kieContainerRef = new AtomicReference<>(kieContainer);
+        this.externalDataService = externalDataService;
     }
 
     @Override
@@ -181,6 +184,9 @@ public class RulesManagementServiceImpl implements RulesManagementService {
         try {
             KieContainer container = kieContainerRef.get();
             KieSession kieSession = container.newKieSession();
+            
+            // Register global variables
+            kieSession.setGlobal("externalDataService", externalDataService);
             
             // Add event listener to track rule firings and fact modifications
             kieSession.addEventListener(new DefaultRuleRuntimeEventListener() {

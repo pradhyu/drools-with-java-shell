@@ -1,15 +1,14 @@
 package com.dmv.config;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.jcache.JCacheCacheManager;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
-import javax.cache.Caching;
-import javax.cache.spi.CachingProvider;
-import java.net.URISyntaxException;
+import java.time.Duration;
 
 @Configuration
 @EnableCaching
@@ -17,32 +16,18 @@ public class CacheConfig {
 
     @Bean
     @Primary
-    public CacheManager cacheManager() throws URISyntaxException {
-        CachingProvider provider = Caching.getCachingProvider();
-        javax.cache.CacheManager cacheManager = provider.getCacheManager(
-            getClass().getResource("/ehcache.xml").toURI(),
-            getClass().getClassLoader()
-        );
-        return new JCacheCacheManager(cacheManager);
-    }
-
-    @Bean
-    public CacheManager memoryCacheManager() throws URISyntaxException {
-        CachingProvider provider = Caching.getCachingProvider();
-        javax.cache.CacheManager cacheManager = provider.getCacheManager(
-            getClass().getResource("/ehcache.xml").toURI(),
-            getClass().getClassLoader()
-        );
-        return new JCacheCacheManager(cacheManager);
-    }
-
-    @Bean
-    public CacheManager networkCacheManager() throws URISyntaxException {
-        CachingProvider provider = Caching.getCachingProvider();
-        javax.cache.CacheManager cacheManager = provider.getCacheManager(
-            getClass().getResource("/ehcache.xml").toURI(),
-            getClass().getClassLoader()
-        );
-        return new JCacheCacheManager(cacheManager);
+    public CacheManager cacheManager() {
+        CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+        
+        // Configure Caffeine cache with reasonable defaults
+        cacheManager.setCaffeine(Caffeine.newBuilder()
+            .maximumSize(10000)
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .recordStats());
+        
+        // Set cache names
+        cacheManager.setCacheNames(java.util.Arrays.asList("memoryCache", "networkCache", "externalDataCache"));
+        
+        return cacheManager;
     }
 }

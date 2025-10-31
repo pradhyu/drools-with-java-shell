@@ -1,0 +1,70 @@
+[
+  {
+    "type": "renewal",
+    "licenseClass": "CLASS_C",
+    "ageGroup": "standard",
+    "baseFee": 35.00,
+    "processingFee": 5.00,
+    "convenienceFee": 2.50,
+    "totalFee": 42.50,
+    "validFrom": "2024-01-01",
+    "validUntil": "2024-12-31"
+  },
+  {
+    "type": "renewal",
+    "licenseClass": "CLASS_C", 
+    "ageGroup": "senior",
+    "baseFee": 25.00,
+    "processingFee": 5.00,
+    "convenienceFee": 2.50,
+    "totalFee": 32.50,
+    "validFrom": "2024-01-01",
+    "validUntil": "2024-12-31"
+  },
+  {
+    "type": "renewal",
+    "licenseClass": "LEARNER_PERMIT",
+    "ageGroup": "minor",
+    "baseFee": 15.00,
+    "processingFee": 3.00,
+    "convenienceFee": 1.50,
+    "totalFee": 19.50,
+    "validFrom": "2024-01-01",
+    "validUntil": "2024-12-31"
+  },
+  {
+    "type": "replacement",
+    "licenseClass": "any",
+    "ageGroup": "any",
+    "baseFee": 28.00,
+    "processingFee": 5.00,
+    "convenienceFee": 2.50,
+    "totalFee": 35.50,
+    "validFrom": "2024-01-01",
+    "validUntil": "2024-12-31"
+  },
+  {
+    "type": "late_renewal",
+    "licenseClass": "CLASS_C",
+    "ageGroup": "standard",
+    "baseFee": 35.00,
+    "processingFee": 5.00,
+    "convenienceFee": 2.50,
+    "lateFee": 25.00,
+    "totalFee": 67.50,
+    "validFrom": "2024-01-01",
+    "validUntil": "2024-12-31"
+  },
+  {
+    "type": "test_required",
+    "licenseClass": "any",
+    "ageGroup": "any",
+    "baseFee": 0.00,
+    "processingFee": 5.00,
+    "testFee": 35.00,
+    "convenienceFee": 2.50,
+    "totalFee": 42.50,
+    "validFrom": "2024-01-01",
+    "validUntil": "2024-12-31"
+  }
+]
