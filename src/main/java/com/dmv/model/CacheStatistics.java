@@ -4,6 +4,8 @@ import com.dmv.cache.CacheStats;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * Overall cache statistics for the external data service
@@ -18,6 +20,9 @@ public class CacheStatistics {
     private final long totalMaxSize;
     private final List<CacheStats> layerStats;
     private final LocalDateTime timestamp;
+    private final Map<String, Long> hitsByLayer;
+    private final Map<String, Long> missesByLayer;
+    private final Map<String, Double> avgResponseTimeByLayer;
 
     public CacheStatistics(long totalHitCount, long totalMissCount, double overallHitRatio,
                           long totalEvictionCount, long totalSize, long totalMaxSize,
@@ -30,6 +35,17 @@ public class CacheStatistics {
         this.totalMaxSize = totalMaxSize;
         this.layerStats = layerStats;
         this.timestamp = LocalDateTime.now();
+        
+        // Build layer-specific maps from layerStats
+        this.hitsByLayer = new HashMap<>();
+        this.missesByLayer = new HashMap<>();
+        this.avgResponseTimeByLayer = new HashMap<>();
+        
+        for (CacheStats stats : layerStats) {
+            hitsByLayer.put(stats.getCacheType(), stats.getHitCount());
+            missesByLayer.put(stats.getCacheType(), stats.getMissCount());
+            avgResponseTimeByLayer.put(stats.getCacheType(), (double) stats.getAverageGetTime());
+        }
     }
 
     // Getters
@@ -63,6 +79,39 @@ public class CacheStatistics {
 
     public LocalDateTime getTimestamp() {
         return timestamp;
+    }
+
+    public Map<String, Long> getHitsByLayer() {
+        return hitsByLayer;
+    }
+
+    public Map<String, Long> getMissesByLayer() {
+        return missesByLayer;
+    }
+
+    public Map<String, Double> getAvgResponseTimeByLayer() {
+        return avgResponseTimeByLayer;
+    }
+    
+    /**
+     * Get hits for a specific cache layer
+     */
+    public long getHitsForLayer(String layerType) {
+        return hitsByLayer.getOrDefault(layerType, 0L);
+    }
+    
+    /**
+     * Get misses for a specific cache layer
+     */
+    public long getMissesForLayer(String layerType) {
+        return missesByLayer.getOrDefault(layerType, 0L);
+    }
+    
+    /**
+     * Get average response time for a specific cache layer
+     */
+    public double getAvgResponseTimeForLayer(String layerType) {
+        return avgResponseTimeByLayer.getOrDefault(layerType, 0.0);
     }
 
     @Override

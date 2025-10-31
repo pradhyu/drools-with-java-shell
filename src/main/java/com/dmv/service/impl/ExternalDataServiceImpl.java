@@ -170,10 +170,15 @@ public class ExternalDataServiceImpl implements ExternalDataService {
         var memoryStats = memoryCache.getStats();
         var networkStats = networkCache.getStats();
         
+        long totalHits = memoryStats.getHitCount() + networkStats.getHitCount();
+        long totalMisses = memoryStats.getMissCount() + networkStats.getMissCount();
+        double overallHitRatio = (totalHits + totalMisses) > 0 ? 
+            (double) totalHits / (totalHits + totalMisses) : 0.0;
+        
         return new CacheStatistics(
-            memoryStats.getHitCount() + networkStats.getHitCount(),
-            memoryStats.getMissCount() + networkStats.getMissCount(),
-            memoryStats.getHitRatio(),
+            totalHits,
+            totalMisses,
+            overallHitRatio,
             memoryStats.getEvictionCount() + networkStats.getEvictionCount(),
             memoryStats.getSize() + networkStats.getSize(),
             memoryStats.getMaxSize() + networkStats.getMaxSize(),
@@ -188,12 +193,42 @@ public class ExternalDataServiceImpl implements ExternalDataService {
 
     @Override
     public void warmUpCache(String collection) {
-        logger.info("Warming up cache for collection: {}", collection);
+        logger.info("Warming up cache for collection: {} [CACHE_OPERATION: WARMUP]", collection);
         
         // Load the entire collection to warm up the cache
         findByCollection(collection);
         
-        logger.info("Cache warmed up for collection: {}", collection);
+        logger.info("Cache warmed up for collection: {} [CACHE_OPERATION: WARMUP]", collection);
+    }
+    
+    /**
+     * Get memory cache statistics for testing
+     */
+    public CacheStats getMemoryCacheStats() {
+        return memoryCache.getStats();
+    }
+    
+    /**
+     * Get network cache statistics for testing
+     */
+    public CacheStats getNetworkCacheStats() {
+        return networkCache.getStats();
+    }
+    
+    /**
+     * Invalidate only memory cache for testing cache layer behavior
+     */
+    public void invalidateMemoryCache() {
+        logger.info("Invalidating memory cache only [CACHE_OPERATION: SELECTIVE_INVALIDATION]");
+        memoryCache.invalidateAll();
+    }
+    
+    /**
+     * Invalidate only network cache for testing cache layer behavior
+     */
+    public void invalidateNetworkCache() {
+        logger.info("Invalidating network cache only [CACHE_OPERATION: SELECTIVE_INVALIDATION]");
+        networkCache.invalidateAll();
     }
 
     private String buildCacheKey(String collection, String key, Object value) {
