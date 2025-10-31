@@ -185,4 +185,17 @@ This project aims to create a DMV (Department of Motor Vehicles) rules engine th
 2. WHEN JSON files contain arrays of objects THEN the system SHALL support key-based filtering to return matching entries
 3. WHEN a key is specified in the query THEN the system SHALL return only entries where that key exists in the JSON object
 4. WHEN no matching entries are found THEN the system SHALL return an empty result without throwing exceptions
-5. WHEN JSON files have nested structures THEN the system SHALL support dot notation for accessing nested properties as keys
+5. WHEN JSON files have nested structures THEN the system SHALL support dot notation for accessing nested properties as keys### Req
+uirement 15
+
+**User Story:** As a system administrator, I want detailed cache layer metrics and testing capabilities, so that I can verify multi-layer cache performance and ensure each cache layer is functioning correctly.
+
+#### Acceptance Criteria
+
+1. WHEN cache operations occur THEN the system SHALL track which specific cache layer (memory, network, or storage) was accessed for each request
+2. WHEN I request cache statistics THEN the system SHALL provide detailed metrics including hit/miss ratios for each individual cache layer
+3. WHEN testing cache behavior THEN the system SHALL provide methods to selectively invalidate specific cache layers to verify cache hierarchy
+4. WHEN cache layers are accessed THEN the system SHALL log cache layer hit information with timestamps for performance analysis
+5. WHEN running integration tests THEN the system SHALL verify that cache layers are accessed in the correct order (memory → network → storage)
+6. WHEN cache performance is measured THEN the system SHALL provide response time metrics for each cache layer to validate performance differences
+7. WHEN cache capacity limits are reached THEN the system SHALL provide eviction metrics and ensure proper cache layer behavior under load
